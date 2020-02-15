@@ -91,9 +91,9 @@ public class Render implements Runnable {
 			glfwSwapBuffers(currentWindow); // swap the color buffers
 
 			glfwPollEvents();
-			Vector3f wasd = input.getWASD();
-			camera.getCameraMatrixObj().translate(wasd);
-			input.getMouseMatrix();
+
+			camera.lookAround(input.getMouseCoords());
+			camera.moveCamera(input.getWASD());
 
 		}
 		
@@ -122,25 +122,32 @@ public class Render implements Runnable {
 		for (Renderable r: renderableCollection) {
 			glBindVertexArray(r.getVAO());
 			glUniformMatrix4fv(modelUniformLocation, false, r.getRenderableMatrix());
-			glVertexAttribPointer(ShaderConsts.attribPointerVPosition, 3, GL_FLOAT, false, 0, 0l);
-			glEnableVertexAttribArray(ShaderConsts.attribPointerVPosition);
-			glDrawArrays(GL46.GL_TRIANGLES, 0, r.getVertexCount()); //placeholder
+			//yes violating encapsulation here call the cops
+			glVertexAttribPointer(resourceManager.getShaderProgram().getAttribPtrVPos(), r.getVertexCount(), GL_FLOAT, false, 0, 0l);
+			glEnableVertexAttribArray(resourceManager.getShaderProgram().getAttribPtrVPos());
+			glDrawArrays(GL46.GL_TRIANGLE_STRIP, 0, r.getVertexCount()); //placeholder
 						
 		}
 	}
 	
-	public void initialize() {		
+	public void initialize() {
+		this.windowWidth = 640;
+		this.windowHeight = 480;
 		this.resourceManager = new RenderResourceManager();
 		this.camera = new Camera();
 		initGLFW();
 		resourceManager.init();
-		input = new Input(currentWindow);
+		input = new Input(currentWindow,windowWidth,windowHeight);
 
 				
 	}
 	
 	public void loadNewScene() {
-		resourceManager.loadDefaultModel();
+		Model model1 = resourceManager.loadDefaultModel();
+		model1.getMatrixObj().translate(0f,-1f,02f);
+		Model model = resourceManager.loadDefaultModel();
+		model.getMatrixObj().translate(0f,0f,5f);
+
 
 	}
 	
@@ -181,7 +188,7 @@ public class Render implements Runnable {
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 		
-		currentWindow = glfwCreateWindow(640, 480, "Hello World!", NULL, NULL);
+		currentWindow = glfwCreateWindow(windowWidth, windowHeight, "Hello World!", NULL, NULL);
 		
 		if (currentWindow == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
@@ -223,18 +230,7 @@ public class Render implements Runnable {
 	
 	@Override
 	public void run() {
-		
-//		BufferInfo bufferInfo = resourceManager.getBufferInfo();
-//		
-//		while ( !glfwWindowShouldClose(bufferInfo.getCurrentWindow()) ) {			
-//			display();
-//
-//			glfwSwapBuffers(bufferInfo.getCurrentWindow()); // swap the color buffers
-//
-//			glfwPollEvents();
-//		}
-//		
-//		terminate();
+
 		
 	}	
 	

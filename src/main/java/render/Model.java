@@ -54,6 +54,7 @@ public class Model implements Renderable {
 	public float[] getRenderableMatrix() {
 		return modelMatrix.get(new float[16]);
 	}
-	
-	
+	public Matrix4f getMatrixObj(){ return modelMatrix;}
+
+
 }

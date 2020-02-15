@@ -1,29 +1,44 @@
 package input;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2d;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.DoubleBuffer;
+import java.util.Vector;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Input {
 
     private Vector3f wasdVector;
-    private Matrix4f mouseMatrix;
+    private Vector2d mouseVector;
+
+
 
     private long window;
-    private float strength;
+    //refactor
 
-    private DoubleBuffer mouseX;
+    private final int width;
+    private final int height;
+
+    private DoubleBuffer mouseX; //change to array
     private DoubleBuffer mouseY;
-
-    public Input(long window){
+    //refactor
+    /**
+     * Input consturctor
+     * @param window handle of window
+     * @param windowWidth window width (for mouse calculations)
+     * @param windowHeight window height (for mouse calculations)
+     */
+    public Input(long window, int windowWidth, int windowHeight){
         this.window = window;
         this.wasdVector = new Vector3f();
-        this.mouseMatrix = new Matrix4f();
-        this.strength = .15f;
+        this.mouseVector = new Vector2d();
+
+        this.width = windowWidth;
+        this.height = windowHeight;
 
         mouseX = BufferUtils.createDoubleBuffer(1);
         mouseY = BufferUtils.createDoubleBuffer(1);
@@ -39,36 +54,34 @@ public class Input {
         int d = glfwGetKey(window, GLFW_KEY_D);
 
         if(w==1){
-            wasdVector.z = 1 * strength;
+            wasdVector.z = 1;
         }
         if(a==1){
-            wasdVector.x = 1 * strength;
+            wasdVector.x = 1;
         }
         if(s==1){
-            wasdVector.z = -1 * strength;
+            wasdVector.z = -1;
         }
         if(d==1){
-            wasdVector.x = -1 * strength;
+            wasdVector.x = -1;
         }
-
 
         return wasdVector;
 
 
     }
 
-    public Matrix4f getMouseMatrix() {
-        mouseMatrix.identity();
 
+
+
+    public Vector2d getMouseCoords(){
         glfwGetCursorPos(window, mouseX, mouseY);
-        double y  = mouseY.get(0);
-        double x = mouseX.get(0);
+        mouseVector.y = mouseY.get(0);
+        mouseVector.x = mouseX.get(0);
 
-        //center coords
-
-        //System.out.println("x: "+x+" y: "+y);
-
-
-        return mouseMatrix;
+        return mouseVector;
     }
+
+
+
 }

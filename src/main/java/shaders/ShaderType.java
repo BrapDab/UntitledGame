@@ -10,7 +10,7 @@ public enum ShaderType {
 	
 	EXAMPLEFRAGMENTSHADER{
 		public CharSequence getShader() {
-			Path path = FileSystems.getDefault().getPath("");
+			Path path = FileSystems.getDefault().getPath("C:/Users/Ja/IdeaProjects/UntitledGame/src/main/java/shaders/exampleFragmentShader");
 			
 			try {
 				return new StringBuilder(new String(Files.readAllBytes(path)));
@@ -23,7 +23,7 @@ public enum ShaderType {
 	PERSPECTIVEVERTEXSHADER{
 		public CharSequence getShader() {
 			//String dir = System.getProperty("user.dir");
-			Path path = FileSystems.getDefault().getPath("");
+			Path path = FileSystems.getDefault().getPath("C:/Users/Ja/IdeaProjects/UntitledGame/src/main/java/shaders/perspectiveVertexShader");
 
 			try {
 				return new StringBuilder(new String(Files.readAllBytes(path)));

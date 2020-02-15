@@ -16,8 +16,8 @@ public class ShaderProgram {
 	private int fragmentShaderPtr;
 	private int vertrexShaderPtr;
 	private int shaderProgramPtr;
-	
-	private final int attribPtrVPos;		
+	private final int attribPtrVPos;
+
 	private final String vertUniformProjectionMat;
 	private final String vertUniformViewMat;
 	private final String vertUniformModelMat;
@@ -28,6 +28,7 @@ public class ShaderProgram {
 		this.vertUniformModelMat = "model";
 		this.vertUniformViewMat = "view";
 		this.vertUniformProjectionMat = "projection";
+
 	}
 	
 	public int getFragmentShaderPtr() {
@@ -48,9 +49,7 @@ public class ShaderProgram {
 	public void setShaderProgramPtr(int shaderProgramPtr) {
 		this.shaderProgramPtr = shaderProgramPtr;
 	}
-	public int getAttribPtrVPos() {
-		return attribPtrVPos;
-	}
+	public int getAttribPtrVPos(){ return attribPtrVPos;}
 
 	public String getVertUniformProjectionMat() {
 		return vertUniformProjectionMat;

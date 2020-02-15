@@ -52,7 +52,7 @@ public class BufferInfo {
 		}
 		
 		
-		throw new RuntimeException("Ran out of buffer objects buddy!"); //TODO placeholder probably should prompt a clean up here (that is if lazy cleanup is the chosen, otherwise graceful fail?)
+		throw new RuntimeException("Ran out of buffer objects buddy!"); //TODO
 		
 	}
 	
@@ -69,7 +69,7 @@ public class BufferInfo {
 			}
 		}
 		
-		throw new RuntimeException("Ran out of buffer objects buddy!"); //TODO placeholder probably should prompt a clean up here (that is if lazy cleanup is the chosen, otherwise graceful fail?
+		throw new RuntimeException("Ran out of buffer objects buddy!"); //TODO
 		
 	}
 		

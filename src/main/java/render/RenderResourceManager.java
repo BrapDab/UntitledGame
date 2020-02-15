@@ -77,8 +77,7 @@ public class RenderResourceManager {
 			glBindVertexArray(this.bufferInfo.getVertexArrayObjects()[0]);
 			glBindBuffer(GL_ARRAY_BUFFER, this.bufferInfo.getBufferObjects()[0]);
 
-//			// might move to different method
-//			glVertexAttribPointer(ShaderConsts.attribPointerVPosition, 3, GL_FLOAT, false, 0, 0l); //TODO
+			glVertexAttribPointer(shaderProgram.getAttribPtrVPos(), 3, GL_FLOAT, false, 0, 0l); //TODO
 			
 			allocatedRenderables.add(m);
 			
@@ -89,7 +88,7 @@ public class RenderResourceManager {
 		public void loadDefaultShaders() {
 			CharSequence fragShader = ShaderType.EXAMPLEFRAGMENTSHADER.getShader();
 			CharSequence vertShader = ShaderType.PERSPECTIVEVERTEXSHADER.getShader();
-			CharSequence passthroughvertexshaderShader = ShaderType.PASSTHROUGHVERTEXSHADER.getShader();
+			//CharSequence passthroughvertexshaderShader = ShaderType.PASSTHROUGHVERTEXSHADER.getShader();
 
 			this.shaderProgram.setFragmentShaderPtr(compileShader(fragShader, GL46.GL_FRAGMENT_SHADER));
 			this.shaderProgram.setVertrexShaderPtr(compileShader(vertShader, GL46.GL_VERTEX_SHADER));
