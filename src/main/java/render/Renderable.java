@@ -5,5 +5,6 @@ public interface Renderable {
 	int getVAO();
 	int getVertexCount();
 	float[] getRenderableMatrix();
+	ModelType getModelType();
 	
 }

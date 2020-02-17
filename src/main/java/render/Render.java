@@ -84,7 +84,7 @@ public class Render implements Runnable {
 		
 		while ( !glfwWindowShouldClose(currentWindow) ) {
 			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-			GL46.glClear(GL46.GL_COLOR_BUFFER_BIT);
+			GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT);
 
 			dirtyRender(resourceManager.allocatedRenderables);
 
@@ -96,7 +96,7 @@ public class Render implements Runnable {
 			camera.moveCamera(input.getWASD());
 
 		}
-		
+		resourceManager.cleanUpAll();
 		terminate();
 	}
 	
@@ -138,8 +138,9 @@ public class Render implements Runnable {
 		initGLFW();
 		resourceManager.init();
 		input = new Input(currentWindow,windowWidth,windowHeight);
+		GL46.glEnable(GL46.GL_DEPTH_TEST);
 
-				
+
 	}
 	
 	public void loadNewScene() {

@@ -8,10 +8,7 @@ import java.nio.file.Path;
 
 public class Boilerplate {
 			
-	
-	public static CharSequence readShader(Path path) throws IOException {
-		return new StringBuilder(new String(Files.readAllBytes(null)));
-	}
+
 	
 	public static float[] createModelFloatArray(Path path)  throws IOException{
 
@@ -33,18 +30,6 @@ public class Boilerplate {
 			};
 	}
 
-//		return new float[]{
-//				// front
-//				-1.0f -1.0f,  1.0f,
-//				1.0f, -1.0f,  1.0f,
-//				1.0f,  1.0f,  1.0f,
-//				-1.0f,  1.0f,  1.0f,
-//				// back
-//				-1.0f, -1.0f, -1.0f,
-//				1.0f, -1.0f, -1.0f,
-//				1.0f,  1.0f, -1.0f,
-//				-1.0f,  1.0f, -1.0f
-//		};
 	}
 	
 

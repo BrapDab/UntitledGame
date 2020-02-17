@@ -39,7 +39,6 @@ public class Camera {
 	//public void lookAt(Model model);
 	//public void lockOn(Model model);
 	//public void zoom(float val);
-	//public void trasnlateMove(float[] translate);
 	
 	/**
 	 * Use this only when you need the float arr to load it into openGL
@@ -52,7 +51,7 @@ public class Camera {
 		return cameraMatrix;
 	}
 
-	public float[] getViewMatrixArr() { return viewMatrix.get(new float [16]);};
+	public float[] getViewMatrixArr() { return viewMatrix.get(new float [16]);}
 
 	public Matrix4f getViewMatrixObj(){ return viewMatrix;}
 	
@@ -87,7 +86,7 @@ public class Camera {
 		mouseDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
 
 		mouseDirection.normalize();
-		cameraMatrix.setPerspective((float)Math.toRadians(70), 640/480, 0.1f, 100);
+		cameraMatrix.setPerspective((float)Math.toRadians(70), (float)640/480, 0.1f, 100);
 		cameraMatrix.lookAt(currentPos,mouseDirection.add(currentPos),cameraUp);
 
 	}
