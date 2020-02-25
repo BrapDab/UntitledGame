@@ -10,8 +10,9 @@ import static org.lwjgl.opengl.GL45.glCreateVertexArrays;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL46;
@@ -27,34 +28,37 @@ import shaders.ShaderType;
  */
 public class RenderResourceManager {
 
-	private ShaderProgram shaderProgram;
-	public List<Renderable> allocatedRenderables; //change to private
+	private MainShaderProgram mainShaderProgram;
+	private Map<ModelType,Renderable> allocatedRenderables;
 
 	public RenderResourceManager() {
-		this.shaderProgram = new ShaderProgram();
+		this.mainShaderProgram = new MainShaderProgram();
+		this.allocatedRenderables = new HashMap<>();
 	}
 
+	public Renderable getRenderable(ModelType type){
+		return allocatedRenderables.get(type);
+	}
 
-
-	public ShaderProgram getShaderProgram() {
-		return shaderProgram;
+	public MainShaderProgram getMainShaderProgram() {
+		return mainShaderProgram;
 	}
 
 	public void init() {
 		initGL();
-		shaderProgram.setShaderProgramPtr(GL46.glCreateProgram());
+		mainShaderProgram.setShaderProgramPtr(GL46.glCreateProgram());
 		loadDefaultShaders();
-		glUseProgram(shaderProgram.getShaderProgramPtr());
-		allocatedRenderables = new ArrayList<>();
+		glUseProgram(mainShaderProgram.getShaderProgramPtr());
 	}
 
 
-	//dirty placeholder
-	public Model loadDefaultModel() {
+
+	//refactor later
+	public Model loadModel(ModelType type) {
 
 		Model m = new Model();
 		m.setBufferObject(glCreateBuffers());
-		m.setArrayObject(glCreateBuffers());
+		m.setArrayObject(glCreateVertexArrays());
 
 
 		float[] model = null;
@@ -71,9 +75,9 @@ public class RenderResourceManager {
 		glBindVertexArray(m.getVAO());
 		glBindBuffer(GL_ARRAY_BUFFER, m.getVBO());
 
-		glVertexAttribPointer(shaderProgram.getAttribPtrVPos(), 3, GL_FLOAT, false, 0, 0l); //TODO
+		glVertexAttribPointer(mainShaderProgram.getAttribPtrVPos(), 3, GL_FLOAT, false, 0, 0l); //TODO
 
-		allocatedRenderables.add(m);
+		allocatedRenderables.put(ModelType.CUBEMODEL, m);
 
 		return m;
 	}
@@ -84,14 +88,22 @@ public class RenderResourceManager {
 		CharSequence vertShader = ShaderType.PERSPECTIVEVERTEXSHADER.getShader();
 		//CharSequence passthroughvertexshaderShader = ShaderType.PASSTHROUGHVERTEXSHADER.getShader();
 
-		this.shaderProgram.setFragmentShaderPtr(compileShader(fragShader, GL46.GL_FRAGMENT_SHADER));
-		this.shaderProgram.setVertrexShaderPtr(compileShader(vertShader, GL46.GL_VERTEX_SHADER));
+		this.mainShaderProgram.setFragmentShaderPtr(compileShader(fragShader, GL46.GL_FRAGMENT_SHADER));
+		this.mainShaderProgram.setVertrexShaderPtr(compileShader(vertShader, GL46.GL_VERTEX_SHADER));
 		//this.shaderProgram.setVertrexShaderPtr(compileShader(passthroughvertexshaderShader, GL46.GL_VERTEX_SHADER));
 
-		attachAndLinkShaders(new int[]{shaderProgram.getFragmentShaderPtr(), shaderProgram.getVertrexShaderPtr()}, shaderProgram.getShaderProgramPtr());
+		attachAndLinkShaders(new int[]{mainShaderProgram.getFragmentShaderPtr(), mainShaderProgram.getVertrexShaderPtr()}, mainShaderProgram.getShaderProgramPtr());
+
+		mainShaderProgram.setVertUniformModelPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(), mainShaderProgram.getVertUniformModelMat()));
+		mainShaderProgram.setVertUniformProjectionPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(), mainShaderProgram.getVertUniformProjectionMat()));
+		mainShaderProgram.setVertUniformViewPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(), mainShaderProgram.getVertUniformViewMat()));
+
+		mainShaderProgram.setFragUniformLightPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(),mainShaderProgram.getFragUniformLightColor()));
+		mainShaderProgram.setFragUniformObjColorPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(),mainShaderProgram.getFragUniformObjColor()));
 
 
 	}
+
 
 	/**
 	 * @param shaders shader objects that were compiled
@@ -158,7 +170,7 @@ public class RenderResourceManager {
 		glDeleteBuffers(BO);
 		glDeleteVertexArrays(VO);
 
-		glDeleteProgram(shaderProgram.getShaderProgramPtr());
+		glDeleteProgram(mainShaderProgram.getShaderProgramPtr());
 
 
 	}

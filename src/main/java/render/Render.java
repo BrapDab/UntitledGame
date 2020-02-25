@@ -29,17 +29,7 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.glDrawArrays;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL20.glAttachShader;
-import static org.lwjgl.opengl.GL20.glCompileShader;
-import static org.lwjgl.opengl.GL20.glCreateShader;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
-import static org.lwjgl.opengl.GL20.glShaderSource;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
-import static org.lwjgl.opengl.GL20.glUseProgram;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glClearBufferfv;
 import static org.lwjgl.opengl.GL45.glCreateBuffers;
@@ -48,21 +38,16 @@ import static org.lwjgl.opengl.GL45.glNamedBufferData;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Collection;
+import java.util.List;
 
+import entity.Entity;
 import input.Input;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL45;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.system.MemoryStack;
-
-import project.Boilerplate;
 
 
 /**
@@ -80,13 +65,13 @@ public class Render implements Runnable {
 	private int windowWidth;
 		
 	
-	public void display() {
+	public void display(Collection<Entity> entities) {
 		
 		while ( !glfwWindowShouldClose(currentWindow) ) {
 			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT);
 
-			dirtyRender(resourceManager.allocatedRenderables);
+			dirtyRender(entities);
 
 			glfwSwapBuffers(currentWindow); // swap the color buffers
 
@@ -98,6 +83,8 @@ public class Render implements Runnable {
 		}
 		resourceManager.cleanUpAll();
 		terminate();
+		System.exit(0);
+
 	}
 	
 	public void massRender() {
@@ -107,24 +94,23 @@ public class Render implements Runnable {
 	}
 	
 	
-	/**
-	 * Render unsorted, unoptimized Collection of Renderables
-	 */
-	public void dirtyRender(Collection<Renderable> renderableCollection) {
-		
-		int modelUniformLocation = glGetUniformLocation(resourceManager.getShaderProgram().getShaderProgramPtr(), new StringBuilder(resourceManager.getShaderProgram().getVertUniformModelMat()));
-		int projectionUniformLocation = glGetUniformLocation(resourceManager.getShaderProgram().getShaderProgramPtr(), new StringBuilder(resourceManager.getShaderProgram().getVertUniformProjectionMat()));
-		int viewUniformLocation = glGetUniformLocation(resourceManager.getShaderProgram().getShaderProgramPtr(), new StringBuilder(resourceManager.getShaderProgram().getVertUniformViewMat()));
+	//placeholder
+	public void dirtyRender(Collection<Entity> entities) {
 
-		glUniformMatrix4fv(projectionUniformLocation,false,camera.getCameraMatrixArr());
-		glUniformMatrix4fv(viewUniformLocation,false,camera.getViewMatrixArr());
+		MainShaderProgram mainShaderProgram = resourceManager.getMainShaderProgram();
+
+		glUniformMatrix4fv(mainShaderProgram.getVertUniformProjectionPtr(),false,camera.getCameraMatrixArr());
+		glUniformMatrix4fv(mainShaderProgram.getVertUniformViewPtr(),false,camera.getViewMatrixArr());
+
+		//TODO rework later to handle more types
+		Renderable r = resourceManager.getRenderable(entities.iterator().next().getModelType());
+
+		glBindVertexArray(r.getVAO());
+		glVertexAttribPointer(resourceManager.getMainShaderProgram().getAttribPtrVPos(), r.getVertexCount(), GL_FLOAT, false, 0, 0l);
+		glEnableVertexAttribArray(resourceManager.getMainShaderProgram().getAttribPtrVPos());
 		
-		for (Renderable r: renderableCollection) {
-			glBindVertexArray(r.getVAO());
-			glUniformMatrix4fv(modelUniformLocation, false, r.getRenderableMatrix());
-			//yes violating encapsulation here call the cops
-			glVertexAttribPointer(resourceManager.getShaderProgram().getAttribPtrVPos(), r.getVertexCount(), GL_FLOAT, false, 0, 0l);
-			glEnableVertexAttribArray(resourceManager.getShaderProgram().getAttribPtrVPos());
+		for (Entity entity: entities) {
+			glUniformMatrix4fv(mainShaderProgram.getVertUniformModelPtr(), false, entity.getModelMatrixArr());
 			glDrawArrays(GL46.GL_TRIANGLE_STRIP, 0, r.getVertexCount()); //placeholder
 						
 		}
@@ -142,24 +128,17 @@ public class Render implements Runnable {
 
 
 	}
-	
-	public void loadNewScene() {
-		Model model1 = resourceManager.loadDefaultModel();
-		model1.getMatrixObj().translate(0f,-1f,02f);
-		Model model = resourceManager.loadDefaultModel();
-		model.getMatrixObj().translate(0f,0f,5f);
+
+	//load entities of same type
+	public void loadModel(ModelType type) {
+
+		if (resourceManager.getRenderable(type) == null) {
+				resourceManager.loadModel(type);
+		}
 
 
 	}
-	
-	
-	public void update() {		
 
-				
-		
-	}
-
-	
 	
 	public void terminate() {
 

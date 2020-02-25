@@ -10,6 +10,7 @@ public class Camera {
 	
 	private Matrix4f cameraMatrix;
 	private Matrix4f viewMatrix;
+	private float[] cameraMatrixArr;
 
 	private double mousePrevX;
 	private double mousePrevY;
@@ -33,6 +34,7 @@ public class Camera {
 		this.mouseDirection = new Vector3f();
 		this.cameraUp = new Vector3f(0f,1f,0f);
 		this.currentPos = new Vector3f(0f,0f,-3f);
+		this.cameraMatrixArr = new float[16];
 
 	}
 	
@@ -44,7 +46,7 @@ public class Camera {
 	 * Use this only when you need the float arr to load it into openGL
 	 */
 	public float[] getCameraMatrixArr(){
-		return cameraMatrix.get(new float[16]);
+		return cameraMatrix.get(cameraMatrixArr);
 	}
 	
 	public Matrix4f getCameraMatrixObj() {
