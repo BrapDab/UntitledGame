@@ -2,6 +2,6 @@ package render;
 
 public enum ModelType {
 	
-	CUBEMODEL;
+	CUBEMODEL, LIGHTCUBE;
 
 }

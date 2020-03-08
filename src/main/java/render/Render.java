@@ -39,8 +39,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.IntBuffer;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import entity.Entity;
 import input.Input;
@@ -60,18 +59,19 @@ public class Render implements Runnable {
 	private RenderResourceManager resourceManager;
 	private long currentWindow;
 	private Input input;
+	private Map<ModelType, List<Entity>> entityMap;
 	//window
 	private int windowHeight;
 	private int windowWidth;
 		
 	
-	public void display(Collection<Entity> entities) {
+	public void display() {
 		
 		while ( !glfwWindowShouldClose(currentWindow) ) {
-			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+			glClearColor(.7f, .7f, .7f, 1.0f);
 			GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT);
 
-			dirtyRender(entities);
+			dirtyRender();
 
 			glfwSwapBuffers(currentWindow); // swap the color buffers
 
@@ -86,6 +86,7 @@ public class Render implements Runnable {
 		System.exit(0);
 
 	}
+
 	
 	public void massRender() {
 		//instanced rendering
@@ -95,25 +96,40 @@ public class Render implements Runnable {
 	
 	
 	//placeholder
-	public void dirtyRender(Collection<Entity> entities) {
+	public void dirtyRender() {
 
-		MainShaderProgram mainShaderProgram = resourceManager.getMainShaderProgram();
 
-		glUniformMatrix4fv(mainShaderProgram.getVertUniformProjectionPtr(),false,camera.getCameraMatrixArr());
-		glUniformMatrix4fv(mainShaderProgram.getVertUniformViewPtr(),false,camera.getViewMatrixArr());
+		for(ModelType type: ModelType.values()){
+			//TODO placeholder handle light sources better
+			ShaderProgram shaderProgram;
+			if(type == ModelType.LIGHTCUBE){
+				shaderProgram = resourceManager.getLightShaderProgram();
+				GL46.glUseProgram(shaderProgram.getShaderProgramPtr());
 
-		//TODO rework later to handle more types
-		Renderable r = resourceManager.getRenderable(entities.iterator().next().getModelType());
+				glUniformMatrix4fv(shaderProgram.getVertUniformProjectionPtr(),false,camera.getCameraMatrixArr());
+				glUniformMatrix4fv(shaderProgram.getVertUniformViewPtr(),false,camera.getViewMatrixArr());
+			}else{
+				shaderProgram = resourceManager.getMainShaderProgram();
+				GL46.glUseProgram(shaderProgram.getShaderProgramPtr());
 
-		glBindVertexArray(r.getVAO());
-		glVertexAttribPointer(resourceManager.getMainShaderProgram().getAttribPtrVPos(), r.getVertexCount(), GL_FLOAT, false, 0, 0l);
-		glEnableVertexAttribArray(resourceManager.getMainShaderProgram().getAttribPtrVPos());
-		
-		for (Entity entity: entities) {
-			glUniformMatrix4fv(mainShaderProgram.getVertUniformModelPtr(), false, entity.getModelMatrixArr());
-			glDrawArrays(GL46.GL_TRIANGLE_STRIP, 0, r.getVertexCount()); //placeholder
-						
+				glUniformMatrix4fv(shaderProgram.getVertUniformProjectionPtr(),false,camera.getCameraMatrixArr());
+				glUniformMatrix4fv(shaderProgram.getVertUniformViewPtr(),false,camera.getViewMatrixArr());
+			}
+			List<Entity> entities = this.entityMap.get(type);
+			if (entities.size()==0) continue;
+
+			Renderable r = resourceManager.getRenderable(type);
+
+			glBindVertexArray(r.getVAO());
+			glVertexAttribPointer(resourceManager.getMainShaderProgram().getAttribPtrVPos(), r.getVertexCount(), GL_FLOAT, false, 0, 0l);
+			glEnableVertexAttribArray(resourceManager.getMainShaderProgram().getAttribPtrVPos());
+
+			for(Entity e: entities){
+				glUniformMatrix4fv(shaderProgram.getVertUniformModelPtr(), false, e.getModelMatrixArr());
+				glDrawArrays(GL46.GL_TRIANGLE_STRIP, 0, r.getVertexCount()); //placeholder
+				}
 		}
+
 	}
 	
 	public void initialize() {
@@ -121,15 +137,16 @@ public class Render implements Runnable {
 		this.windowHeight = 480;
 		this.resourceManager = new RenderResourceManager();
 		this.camera = new Camera();
+
 		initGLFW();
 		resourceManager.init();
 		input = new Input(currentWindow,windowWidth,windowHeight);
+		initEntityMap();
 		GL46.glEnable(GL46.GL_DEPTH_TEST);
 
 
 	}
 
-	//load entities of same type
 	public void loadModel(ModelType type) {
 
 		if (resourceManager.getRenderable(type) == null) {
@@ -137,6 +154,18 @@ public class Render implements Runnable {
 		}
 
 
+	}
+
+	/**
+	 * Create empty list for every type of model for NPE safety
+	 * Enhanced for loops will just jump out of the iteration with empty lists
+	 */
+	private void initEntityMap(){
+		this.entityMap = new HashMap<>();
+		final ModelType[] values = ModelType.values();
+		for(ModelType type: values){
+			this.entityMap.put(type,new ArrayList<>());
+		}
 	}
 
 	
@@ -212,9 +241,25 @@ public class Render implements Runnable {
 	public void run() {
 
 		
-	}	
-	
-	
+	}
 
-	
+	public void addEntityForRender(Entity e){
+		List<Entity> sameEntities = this.entityMap.get(e.getModelType());
+
+		sameEntities.add(e);
+		loadModel(e.getModelType());
+	}
+
+	public void addEntitiesForRender(List<Entity> es){
+		for(Entity e: es){
+			List<Entity> sameEntities = this.entityMap.get(e.getModelType());
+			sameEntities.add(e);
+			loadModel(e.getModelType());
+		}
+	}
+
+
+
+
+
 }

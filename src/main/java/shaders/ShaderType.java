@@ -44,6 +44,18 @@ public enum ShaderType {
 			}
 			return null;
 		}
+	},LIGHTFRAGMENTSHADER{
+		public CharSequence getShader() {
+			//String dir = System.getProperty("user.dir");
+			Path path = FileSystems.getDefault().getPath("C:/Users/Ja/IdeaProjects/UntitledGame/src/main/java/shaders/lightFragmentShader");
+
+			try {
+				return new StringBuilder(new String(Files.readAllBytes(path)));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
 	};
 
 	

@@ -9,11 +9,11 @@ import static org.lwjgl.opengl.GL45.glCreateBuffers;
 import static org.lwjgl.opengl.GL45.glCreateVertexArrays;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.prism.ps.Shader;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL46;
 
@@ -28,26 +28,30 @@ import shaders.ShaderType;
  */
 public class RenderResourceManager {
 
-	private MainShaderProgram mainShaderProgram;
-	private Map<ModelType,Renderable> allocatedRenderables;
+	private ShaderProgram mainShaderProgram;
+	private ShaderProgram lightShaderProgram;
+	Map<ModelType,Renderable> allocatedRenderables;
 
 	public RenderResourceManager() {
-		this.mainShaderProgram = new MainShaderProgram();
+		this.mainShaderProgram = new ShaderProgram();
+		this.lightShaderProgram = new ShaderProgram();
 		this.allocatedRenderables = new HashMap<>();
 	}
 
 	public Renderable getRenderable(ModelType type){
 		return allocatedRenderables.get(type);
 	}
-
-	public MainShaderProgram getMainShaderProgram() {
+	public ShaderProgram getMainShaderProgram() {
 		return mainShaderProgram;
 	}
+	public ShaderProgram getLightShaderProgram() { return lightShaderProgram; }
 
 	public void init() {
 		initGL();
 		mainShaderProgram.setShaderProgramPtr(GL46.glCreateProgram());
+		lightShaderProgram.setShaderProgramPtr(GL46.glCreateProgram());
 		loadDefaultShaders();
+		loadLightShader();
 		glUseProgram(mainShaderProgram.getShaderProgramPtr());
 	}
 
@@ -64,6 +68,7 @@ public class RenderResourceManager {
 		float[] model = null;
 
 		try {
+			//TODO
 			model = Boilerplate.createModelFloatArray(null);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -77,7 +82,7 @@ public class RenderResourceManager {
 
 		glVertexAttribPointer(mainShaderProgram.getAttribPtrVPos(), 3, GL_FLOAT, false, 0, 0l); //TODO
 
-		allocatedRenderables.put(ModelType.CUBEMODEL, m);
+		allocatedRenderables.put(type, m);
 
 		return m;
 	}
@@ -98,8 +103,30 @@ public class RenderResourceManager {
 		mainShaderProgram.setVertUniformProjectionPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(), mainShaderProgram.getVertUniformProjectionMat()));
 		mainShaderProgram.setVertUniformViewPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(), mainShaderProgram.getVertUniformViewMat()));
 
-		mainShaderProgram.setFragUniformLightPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(),mainShaderProgram.getFragUniformLightColor()));
-		mainShaderProgram.setFragUniformObjColorPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(),mainShaderProgram.getFragUniformObjColor()));
+		mainShaderProgram.setFragUniformLightPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(), mainShaderProgram.getFragUniformLightColor()));
+		mainShaderProgram.setFragUniformObjColorPtr(glGetUniformLocation(mainShaderProgram.getShaderProgramPtr(), mainShaderProgram.getFragUniformObjColor()));
+
+
+	}
+
+	public void loadLightShader() {
+
+		CharSequence fragShader = ShaderType.LIGHTFRAGMENTSHADER.getShader();
+		CharSequence vertShader = ShaderType.PERSPECTIVEVERTEXSHADER.getShader();
+		//CharSequence passthroughvertexshaderShader = ShaderType.PASSTHROUGHVERTEXSHADER.getShader();
+
+		this.lightShaderProgram.setFragmentShaderPtr(compileShader(fragShader, GL46.GL_FRAGMENT_SHADER));
+		this.lightShaderProgram.setVertrexShaderPtr(compileShader(vertShader, GL46.GL_VERTEX_SHADER));
+		//this.shaderProgram.setVertrexShaderPtr(compileShader(passthroughvertexshaderShader, GL46.GL_VERTEX_SHADER));
+
+		attachAndLinkShaders(new int[]{lightShaderProgram.getFragmentShaderPtr(), lightShaderProgram.getVertrexShaderPtr()}, lightShaderProgram.getShaderProgramPtr());
+
+		lightShaderProgram.setVertUniformModelPtr(glGetUniformLocation(lightShaderProgram.getShaderProgramPtr(), lightShaderProgram.getVertUniformModelMat()));
+		lightShaderProgram.setVertUniformProjectionPtr(glGetUniformLocation(lightShaderProgram.getShaderProgramPtr(), lightShaderProgram.getVertUniformProjectionMat()));
+		lightShaderProgram.setVertUniformViewPtr(glGetUniformLocation(lightShaderProgram.getShaderProgramPtr(), lightShaderProgram.getVertUniformViewMat()));
+
+		lightShaderProgram.setFragUniformLightPtr(glGetUniformLocation(lightShaderProgram.getShaderProgramPtr(), lightShaderProgram.getFragUniformLightColor()));
+		lightShaderProgram.setFragUniformObjColorPtr(glGetUniformLocation(lightShaderProgram.getShaderProgramPtr(), lightShaderProgram.getFragUniformObjColor()));
 
 
 	}
@@ -118,6 +145,7 @@ public class RenderResourceManager {
 		int linkStatus = glGetProgrami(program, GL_LINK_STATUS);
 		if(linkStatus==0){
 			String info = glGetProgramInfoLog(program);
+			throw new RuntimeException(info);
 		}
 
 		for (int i = 0; i < shaders.length; i++) {
@@ -139,7 +167,7 @@ public class RenderResourceManager {
 		int status = glGetShaderi(shaderObject, GL46.GL_COMPILE_STATUS);
 		if (status == 0) {
 			String info = glGetShaderInfoLog(shaderObject);
-			throw new IllegalStateException(info);
+			throw new RuntimeException(info);
 		}
 
 		return shaderObject;

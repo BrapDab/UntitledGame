@@ -11,7 +11,7 @@ This class keeps track of:<p>
  * Any action indicating change of state does so only on the side of java!
  */
 
-public class MainShaderProgram {
+public class ShaderProgram {
 	
 	private int fragmentShaderPtr;
 	private int vertrexShaderPtr;
@@ -34,7 +34,7 @@ public class MainShaderProgram {
 
 
 
-	public MainShaderProgram() {
+	public ShaderProgram() {
 		this.attribPtrVPos = 0;
 		this.vertUniformModelMat = "model";
 		this.vertUniformViewMat = "view";

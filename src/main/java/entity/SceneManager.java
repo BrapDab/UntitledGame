@@ -1,5 +1,7 @@
 package entity;
 
+import render.Render;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +20,10 @@ public class SceneManager {
 
     public List<Entity> getEntities(){
         return entities;
+    }
+    //placeholder
+    public void foo(){
+
     }
 
 }

@@ -13,8 +13,7 @@ public class EntityCube extends Entity {
     private Vector4f colour;
     private float[] colourArr = new float[4];
 
-    public EntityCube(ModelType type){
-
+    public EntityCube(){
         this.colour  = new Vector4f(0f,0.5f,0.7f,1f);
         colourArr[0] = colour.x;
         colourArr[1] = colour.y;

@@ -23,7 +23,7 @@ public class Input {
     private final int width;
     private final int height;
 
-    private DoubleBuffer mouseX; //change to array
+    private DoubleBuffer mouseX; //TODO change to array
     private DoubleBuffer mouseY;
     //refactor
     /**
